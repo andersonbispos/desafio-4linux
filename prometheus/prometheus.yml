@@ -1,0 +1,14 @@
+scrape_configs:
+- job_name: prometheus
+  scrape_interval: 5s
+  static_configs:
+  - targets: [ 'localhost:9090' ]
+
+- job_name: cadivisor
+  scrape_interval: 5s
+  static_configs:
+  - targets: [ 'cadvisor:8080' ]
+
+- job_name: node-server
+  static_configs:
+          - targets: ['node-exporter:9100']
