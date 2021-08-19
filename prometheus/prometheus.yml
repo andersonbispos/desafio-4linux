@@ -10,5 +10,11 @@ scrape_configs:
   - targets: [ 'cadvisor:8080' ]
 
 - job_name: node-server
+  scrape_interval: 5s
   static_configs:
           - targets: ['node-exporter:9100']
+
+- job_name: node-client1
+  scrape_interval: 5s
+  static_configs:
+          - targets: ['10.128.15.199:9100', '10.128.15.199:8080' ]
