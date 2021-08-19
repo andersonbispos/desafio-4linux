@@ -28,7 +28,6 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
     restart: always
     ports:
     - 8080:8080
@@ -40,7 +39,6 @@ services:
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: node-exporter
     restart: always
     expose:
       - 9100
