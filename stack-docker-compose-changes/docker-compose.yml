@@ -6,16 +6,8 @@ services:
     volumes:
       - ./create_database.sql:/docker-entrypoint-initdb.d/create_database.sql
     env_file: ./env/mysql.env
-
-  mysql-exporter:
-    image: prom/mysqld-exporter
-    env_file: ./env/mysql-exporter.env
-    links:
-           - "mysql:hello"
-    depends_on:
-            - mysql
     ports:
-            - "9104:9104"
+	- "3306:3306"
 
   rabbitmq:
     image: rabbitmq:alpine
