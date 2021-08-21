@@ -1,0 +1,148 @@
+# ansible-playbook --key-file id_rsa -u anderson -i hosts prometheus-setup.yml
+# ansible --key-file id_rsa -u anderson -i hosts all -m ping
+
+# docker run -d -p 9104:9104 -name mysql-exporter -e DATA_SOURCE_NAME="exporter:4linux@(localhost:3306)/" prom/mysqld-exporter
+---
+- name: playbook para implantação de prometheus + grafana + cadvisor + node_exporter
+  hosts: all
+  tasks:
+
+  - name: "Adiciona repositorios: deb http://deb.debian.org/debian buster main contrib non-free"
+    apt_repository:
+      repo: deb http://deb.debian.org/debian buster main contrib non-free
+      state: present
+    when: ansible_os_family == "Debian"
+    become: true
+
+  - name: "Adiciona repositorios: deb-src http://deb.debian.org/debian buster main contrib non-free"
+    apt_repository:
+      repo: deb-src http://deb.debian.org/debian buster main contrib non-free
+      state: present
+    when: ansible_os_family == "Debian"
+    become: true
+
+  - name: Adiciona repositorios padrão
+    apt_repository:
+      repo: deb http://deb.debian.org/debian-security/ buster/updates main contrib non-free
+      state: present
+    when: ansible_os_family == "Debian"
+    become: true
+
+  - name: Adiciona repositorios padrão
+    apt_repository:
+      repo: deb http://deb.debian.org/debian buster-updates main contrib non-free
+      state: present
+    when: ansible_os_family == "Debian"
+    become: true
+
+  - name: "Debian: Docker - Adicionando Chave do Repositório"
+    apt_key:
+      url: https://download.docker.com/linux/debian/gpg
+    when: ansible_os_family == "Debian"
+    become: true
+
+  - name: "Debian: Docker - Adicionando Repositório"
+    apt_repository:
+      repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release}} stable"
+      state: present
+    when: ansible_os_family == "Debian"
+    become: true
+
+  - name: "RedHat: Docker - Adicionando Repositório"
+    get_url:
+      url: https://download.docker.com/linux/centos/docker-ce.repo
+      dest: /etc/yum.repos.d/
+    when: ansible_os_family == "RedHat"
+    become: true
+
+  - name: "Debian: Instalando Pacotes Necessários"
+    apt: 
+      name: ["apt-transport-https","ca-certificates","curl","gnupg-agent","software-properties-common","python3","python3-pip"]
+      update_cache: yes
+      state: present
+    when: ansible_os_family == "Debian"
+    become: true
+
+  - name: "RedHat: Instalando Pacotes Necessários"
+    package:
+      name: ["yum-utils","python3","python3-pip"]
+      state: present
+    when: ansible_os_family == "RedHat"  
+    become: true
+
+  - name: Install multi python packages
+    pip:
+      name:
+        - PyYAML
+        - docker
+    become: true
+
+  - name: "Instalando Docker"
+    package:
+      name: ['docker-ce','docker-compose']
+      update_cache: yes
+      state: present
+    notify: docker-service
+    become: true
+
+  handlers:
+    - name: docker-service
+      systemd:
+        name: docker
+        enabled: yes 
+        state: started
+  
+
+- name: deploy prometheus + grafana + cadvisor + node_exporter no server
+  hosts: manager
+  tasks:
+
+  - name: Clone repository with composers for manager and clients
+    git:
+      repo: https://github.com/andersonbispos/desafio-4linux.git
+      dest: /opt/desafio-4linux
+      clone: yes
+      update: yes
+      force: yes
+    become: true
+
+  - name: deploy Docker Compose server stack
+    docker_compose:
+      project_src: /opt/desafio-4linux/monserver
+    become: true
+
+- name: deploy cadvisor + node_exporter no client
+  hosts: nodes
+  tasks:
+
+  - name: Clone repository with composers for manager and clients
+    git:
+      repo: https://github.com/andersonbispos/desafio-4linux.git
+      dest: /opt/desafio-4linux
+      clone: yes
+      update: yes
+      force: yes
+    become: true
+
+  - name: deploy Docker Compose client stack
+    docker_compose:
+      project_src: /opt/desafio-4linux/monclient
+    become: true
+
+# - name: deploy projeto 4 linux
+#   hosts: nodes
+#   tasks:
+
+#   - name: Clone 4 linux repository
+#     git:
+#       repo: https://github.com/4linux/stack-docker-compose.git
+#       dest: /opt/stack-docker-compose
+#       clone: yes
+#       update: yes
+#       force: yes
+#     become: true
+
+#   - name: deploy 4linux stack
+#     docker_compose:
+#       project_src: /opt/stack-docker-compose
+#     become: true
