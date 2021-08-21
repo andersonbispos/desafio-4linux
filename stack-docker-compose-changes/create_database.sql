@@ -7,6 +7,6 @@ CREATE TABLE Messages (
 );
 
 -- enable docker compose
-CREATE USER 'exporter'@'localhost' IDENTIFIED BY '4linux';
-GRANT PROCESS, REPLICATION CLIENT ON *.* TO 'exporter'@'localhost';
-GRANT SELECT ON performance_schema.* TO 'exporter'@'localhost';
+CREATE USER 'exporter'@'%' IDENTIFIED BY '4linux';
+GRANT PROCESS, REPLICATION CLIENT ON *.* TO 'exporter'@'%';
+GRANT SELECT ON performance_schema.* TO 'exporter'@'%';
