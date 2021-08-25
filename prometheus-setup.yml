@@ -1,5 +1,5 @@
 # ansible-playbook --key-file <chave> -u <usuario> -i hosts prometheus-setup.yml
-# docker run -d --restart=always -p 9104:9104 --name mysql-exporter -e DATA_SOURCE_NAME="exporter:4linux@(<ipdoserver>:3306)/" prom/mysqld-exporter
+# docker run -d --restart=always -p 9104:9104 --name mysql-exporter -e DATA_SOURCE_NAME="<dbuser>:<dbpass>@(<ipdoserver>:3306)/" prom/mysqld-exporter
 ---
 - name: playbook para implantação de prometheus + grafana + cadvisor + node_exporter
   hosts: all
